@@ -26,13 +26,15 @@ export function useSlots() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Initialize with default slots immediately to avoid slow loading
+        const defaults = generateSlots();
+
         if (!db) {
             // Local Storage Fallback
             const stored = localStorage.getItem('openmic_slots');
             if (stored) {
                 setSlots(JSON.parse(stored));
             } else {
-                const defaults = generateSlots();
                 setSlots(defaults);
                 localStorage.setItem('openmic_slots', JSON.stringify(defaults));
             }
@@ -40,20 +42,23 @@ export function useSlots() {
             return;
         }
 
-        // Firebase
+        // Set defaults immediately for fast initial render
+        setSlots(defaults);
+        setLoading(false);
+
+        // Firebase - Subscribe to real-time updates
         const slotsRef = collection(db, 'slots');
 
-        // Initial Seed check (simplified for hackathon speed)
-        // Ideally this runs in a cloud function, but here we check client side once
-        // ... skipping seed for now, assuming manual setup or lazy init
-
-        const unsubscribe = onSnapshot(slotsRef, (snapshot) => {
+        const unsubscribe = onSnapshot(slotsRef, async (snapshot) => {
             if (snapshot.empty) {
-                // Seed if empty
-                const defaults = generateSlots();
-                defaults.forEach(async (slot) => {
-                    await setDoc(doc(db, 'slots', slot.id), slot);
-                });
+                // Seed if empty (only happens once)
+                try {
+                    for (const slot of defaults) {
+                        await setDoc(doc(db, 'slots', slot.id), slot);
+                    }
+                } catch (error) {
+                    console.error("Failed to seed slots:", error);
+                }
                 return;
             }
 
@@ -62,12 +67,9 @@ export function useSlots() {
                 .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
 
             setSlots(data);
-            setLoading(false);
         }, (error) => {
             console.error("Firestore error:", error);
             toast.error("Live data connection failed. Using offline mode.");
-            // Fallback to local on error?
-            setLoading(false);
         });
 
         return () => unsubscribe();

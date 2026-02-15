@@ -5,18 +5,21 @@ import { cn } from '../lib/utils';
 import { format } from 'date-fns';
 import { useMessages } from '../hooks/useMessages';
 
+// Import GIFs as modules so Vite can bundle them properly
+import angerGif from '../assets/anger.gif';
+import bravoGif from '../assets/bravo.gif';
+import insultGif from '../assets/insult.gif';
+import surpriseGif from '../assets/surprise.gif';
+import thumbsUpGif from '../assets/thumbs-up.gif';
+import excitedGif from '../assets/excited.gif';
+
 const MOCK_GIFS = [
-    // "https://giphy.com/gifs/tophermcgee3-thumbs-up-1P8E2CLWXqpOXyzCSd",
-    // "https://media.giphy.com/media/3o7TKr3nzbh5WgCFxe/giphy.gif",
-    // "https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif",
-    // "https://media.giphy.com/media/l2Je66zG6mAAZxgqI/giphy.gif",
-    // "https://media.giphy.com/media/3o6ZxpCmFhR8Gk7U7C/giphy.gif"
-    "src/assets/anger.gif",
-    "src/assets/bravo.gif",
-    "src/assets/insult.gif",
-    "src/assets/surprise.gif",
-    "src/assets/thumbs-up.gif",
-    "src/assets/excited.gif"
+    angerGif,
+    bravoGif,
+    insultGif,
+    surpriseGif,
+    thumbsUpGif,
+    excitedGif
 ];
 
 export default function MessageBoard() {

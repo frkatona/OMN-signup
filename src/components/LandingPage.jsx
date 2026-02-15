@@ -18,26 +18,27 @@ export default function LandingPage({ onEnter }) {
                 <div className="h-px w-24 bg-tesla-red mx-auto my-8" />
 
                 <p className="text-lg text-slate-300 leading-relaxed max-w-lg mx-auto">
-                    Every Wednesday at <span className="text-white font-semibold">The Underground</span>.
-                    Join us for a night of music, comedy, and poetry.
+                    Every Wednesday at <span className="text-white font-semibold">My Cafe Buzz</span>.
+                    Join us to listen to or perform music, comedy, or poetry!
+                    All skill levels welcome, original content encouraged!
                 </p>
 
                 <div className="grid grid-cols-2 gap-4 text-left text-sm text-slate-400 bg-white/5 p-6 rounded-lg border border-white/10 backdrop-blur-sm">
                     <div>
                         <p className="uppercase tracking-wider text-xs mb-1 text-slate-500">Host</p>
-                        <p className="text-white">Alex "The Mic" Morgan</p>
+                        <p className="text-white">Anthony K</p>
                     </div>
                     <div>
                         <p className="uppercase tracking-wider text-xs mb-1 text-slate-500">Time</p>
-                        <p className="text-white">8:00 PM - 11:00 PM</p>
+                        <p className="text-white">2:00 PM - 5:00 PM</p>
                     </div>
                     <div>
                         <p className="uppercase tracking-wider text-xs mb-1 text-slate-500">Location</p>
-                        <p className="text-white">123 Main St, State College</p>
+                        <p className="text-white">My Cafe Buzz, Bellefonte</p>
                     </div>
                     <div>
                         <p className="uppercase tracking-wider text-xs mb-1 text-slate-500">Equipment</p>
-                        <p className="text-white">2 Mics, PA, Guitar Amp</p>
+                        <p className="text-white">1 x microphone, 1 x PA speaker, 1 x mixer, 1 x monitor</p>
                     </div>
                 </div>
 

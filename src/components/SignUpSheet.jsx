@@ -40,19 +40,30 @@ export default function SignUpSheet({ slots, updateSlot }) {
                 }
             }
 
-            await updateSlot(selectedSlot.id, {
-                performer: performerName,
-                contact: contactInfo
-            });
-            toast.success('Slot reserved!');
+            try {
+                await updateSlot(selectedSlot.id, {
+                    performer: performerName,
+                    contact: contactInfo
+                });
+                toast.success('Slot reserved!');
+                setModalOpen(false); // Close modal after successful update
+            } catch (error) {
+                // Modal stays open on error so user can retry
+                console.error('Failed to reserve slot:', error);
+            }
         } else {
             if (!window.confirm(`Are you sure you want to cancel the slot for ${selectedSlot.performer}?`)) {
                 return;
             }
-            await updateSlot(selectedSlot.id, { performer: null, contact: null });
-            toast.success('Slot cleared');
+            try {
+                await updateSlot(selectedSlot.id, { performer: null, contact: null });
+                toast.success('Slot cleared');
+                setModalOpen(false); // Close modal after successful update
+            } catch (error) {
+                // Modal stays open on error so user can retry
+                console.error('Failed to clear slot:', error);
+            }
         }
-        setModalOpen(false);
     };
 
     return (
