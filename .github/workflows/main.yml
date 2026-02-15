@@ -1,13 +1,11 @@
-name: Deploy to GitHub Pages
+name: Deploy to Firebase
 
 on:
   push:
-    branches: [ main ]  # or 'master' depending on your default branch
+    branches: [ main, master ]
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   build-and-deploy:
@@ -33,13 +31,10 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
         run: npm run build
         
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-        
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          path: './dist'
-          
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v2
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_AK_OMN_SIGNUP }}'
+          channelId: live
+          projectId: ak-omn-signup
