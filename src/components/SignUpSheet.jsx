@@ -9,9 +9,19 @@ export default function SignUpSheet({ slots, updateSlot }) {
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [performerName, setPerformerName] = useState('');
     const [contactInfo, setContactInfo] = useState('');
-    const [actionType, setActionType] = useState('add'); // 'add' or 'remove'
+    const [actionType, setActionType] = useState('add');
+    const [isUpdating, setIsUpdating] = useState(false);
 
-    const handleSlotClick = (slot) => {
+    const closeModal = () => {
+        setModalOpen(false);
+        setSelectedSlot(null);
+        setPerformerName('');
+        setContactInfo('');
+        setIsUpdating(false);
+    };
+
+    const handleSlotClick = (slot, e) => {
+        if (e) e.stopPropagation();
         setSelectedSlot(slot);
         if (slot.performer) {
             setActionType('remove');
@@ -25,7 +35,10 @@ export default function SignUpSheet({ slots, updateSlot }) {
         setModalOpen(true);
     };
 
-    const confirmAction = async () => {
+    const confirmAction = async (e) => {
+        if (e) e.stopPropagation();
+        if (isUpdating || !selectedSlot) return;
+
         if (actionType === 'add') {
             if (!performerName.trim()) {
                 toast.error('Please enter a name');
@@ -33,35 +46,49 @@ export default function SignUpSheet({ slots, updateSlot }) {
             }
 
             // Duplicate check
-            const isDuplicate = slots.some(s => s.performer && s.performer.toLowerCase() === performerName.toLowerCase());
+            const isDuplicate = slots.some(s => s.performer && s.performer.toLowerCase() === performerName.trim().toLowerCase());
             if (isDuplicate) {
                 if (!window.confirm(`"${performerName}" is already on the list. Are you sure you want to add another slot?`)) {
                     return;
                 }
             }
 
+            setIsUpdating(true);
+            setModalOpen(false); // Optimistically close
+
             try {
                 await updateSlot(selectedSlot.id, {
-                    performer: performerName,
-                    contact: contactInfo
+                    performer: performerName.trim(),
+                    contact: contactInfo.trim()
                 });
                 toast.success('Slot reserved!');
-                setModalOpen(false); // Close modal after successful update
+                setSelectedSlot(null);
+                setPerformerName('');
+                setContactInfo('');
             } catch (error) {
-                // Modal stays open on error so user can retry
                 console.error('Failed to reserve slot:', error);
+                toast.error('Failed to reserve slot. Please try again.');
+                setModalOpen(true); // Re-open on error
+            } finally {
+                setIsUpdating(false);
             }
         } else {
             if (!window.confirm(`Are you sure you want to cancel the slot for ${selectedSlot.performer}?`)) {
                 return;
             }
+            setIsUpdating(true);
+            setModalOpen(false); // Optimistically close
+
             try {
                 await updateSlot(selectedSlot.id, { performer: null, contact: null });
                 toast.success('Slot cleared');
-                setModalOpen(false); // Close modal after successful update
+                setSelectedSlot(null);
             } catch (error) {
-                // Modal stays open on error so user can retry
                 console.error('Failed to clear slot:', error);
+                toast.error('Failed to clear slot.');
+                setModalOpen(true); // Re-open on error
+            } finally {
+                setIsUpdating(false);
             }
         }
     };
@@ -82,7 +109,7 @@ export default function SignUpSheet({ slots, updateSlot }) {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        onClick={() => handleSlotClick(slot)}
+                        onClick={(e) => handleSlotClick(slot, e)}
                         className={cn(
                             "group relative flex items-center justify-between p-4 rounded-lg border transition-all duration-300",
                             slot.performer
@@ -108,12 +135,16 @@ export default function SignUpSheet({ slots, updateSlot }) {
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                             {slot.performer ? (
                                 <button
+                                    onClick={(e) => handleSlotClick(slot, e)}
                                     className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                                 >
                                     <FaTimes />
                                 </button>
                             ) : (
-                                <button className="p-2 text-tesla-red hover:text-white transition-colors">
+                                <button
+                                    onClick={(e) => handleSlotClick(slot, e)}
+                                    className="p-2 text-tesla-red hover:text-white transition-colors"
+                                >
                                     <FaPlus />
                                 </button>
                             )}
@@ -181,19 +212,29 @@ export default function SignUpSheet({ slots, updateSlot }) {
 
                         <div className="flex gap-4">
                             <button
-                                onClick={() => setModalOpen(false)}
-                                className="flex-1 py-3 rounded border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors uppercase tracking-wider text-sm font-semibold"
+                                onClick={() => !isUpdating && setModalOpen(false)}
+                                disabled={isUpdating}
+                                className="flex-1 py-3 rounded border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors uppercase tracking-wider text-sm font-semibold disabled:opacity-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmAction}
+                                disabled={isUpdating}
                                 className={cn(
-                                    "flex-1 py-3 rounded text-white uppercase tracking-wider text-sm font-semibold transition-colors",
-                                    actionType === 'add' ? "bg-tesla-red hover:bg-red-700" : "bg-red-900/50 text-red-200 border border-red-900 hover:bg-red-900"
+                                    "flex-1 py-3 rounded text-white uppercase tracking-wider text-sm font-semibold transition-colors flex items-center justify-center gap-2",
+                                    actionType === 'add' ? "bg-tesla-red hover:bg-red-700" : "bg-red-900/50 text-red-200 border border-red-900 hover:bg-red-900",
+                                    isUpdating && "opacity-70 cursor-not-allowed"
                                 )}
                             >
-                                {actionType === 'add' ? 'Confirm' : 'Remove'}
+                                {isUpdating ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        <span>Processing...</span>
+                                    </>
+                                ) : (
+                                    actionType === 'add' ? 'Confirm' : 'Remove'
+                                )}
                             </button>
                         </div>
                     </div>
